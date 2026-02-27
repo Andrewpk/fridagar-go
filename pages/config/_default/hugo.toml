@@ -1,0 +1,20 @@
+theme = "blowfish"
+baseURL = "/"
+defaultContentLanguage = "en"
+
+enableRobotsTXT = true
+summaryLength = 30
+enableEmoji = true
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+[module]
+  [module.hugoVersion]
+    extended = true
+    min = "0.141.0"
+

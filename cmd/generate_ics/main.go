@@ -49,7 +49,10 @@ func main() {
 		}
 	}
 
-	outputFile := "../../pages/icelandic_holidays.ics"
+	outputFile := "pages/static/icelandic_holidays.ics"
+	if len(os.Args) > 1 {
+		outputFile = os.Args[1]
+	}
 	f, err := os.Create(outputFile)
 	if err != nil {
 		log.Fatalf("failed to create output file: %v", err)

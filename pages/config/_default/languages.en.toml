@@ -1,0 +1,17 @@
+languageCode = "en"
+languageName = "English"
+weight = 1
+title = "Icelandic Holidays"
+
+[params]
+  displayName = "English"
+  isoCode = "en"
+  rtl = false
+  dateFormat = "2 January 2006"
+  description = "Public holidays in Iceland"
+
+[params.author]
+  name = "Icelandic Holidays"
+  headline = "Public holidays and special days in Iceland"
+  bio = "A complete listing of Icelandic public holidays."
+

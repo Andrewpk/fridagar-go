@@ -1,4 +1,4 @@
-# Frídagar
+# Frídagar-Go
 
 A Go library for looking up Icelandic public holidays, commonly celebrated
 "special" days, and resolving business days before/after a given date.

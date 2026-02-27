@@ -10,7 +10,7 @@ All returned dates are in the UTC timezone and set to midnight.
 ## Installation
 
 ```bash
-go get fridagar
+go get github.com/Andrewpk/fridagar-go
 ```
 
 ## Usage

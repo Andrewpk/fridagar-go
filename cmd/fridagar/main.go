@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	"fridagar"
+	"github.com/Andrewpk/fridagar-go"
 )
 
 func main() {

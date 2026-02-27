@@ -36,15 +36,27 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HUGO_VERSION: 0.157.0
+      TZ: Etc/UTC
     steps:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version: 'stable'
-      - name: Install Hugo CLI
-        run: go install github.com/gohugoio/hugo@v${HUGO_VERSION}
+      - name: Install Hugo
+        run: |
+          curl -sLJO "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+          mkdir "${HOME}/.local/hugo"
+          tar -C "${HOME}/.local/hugo" -xf "hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+          rm "hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+          echo "${HOME}/.local/hugo" >> "${GITHUB_PATH}"
       - name: Install Dart Sass
         run: sudo snap install dart-sass
+      - name: Verify installations
+        run: |
+          echo "Dart Sass: $(sass --version)"
+          echo "Go: $(go version)"
+          echo "Hugo: $(hugo version)"
+          echo "Node.js: $(node --version)"
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -61,7 +73,7 @@ jobs:
           HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
           HUGO_ENVIRONMENT: production
         run: |
-          $(go env GOPATH)/bin/hugo \
+            hugo \
             --source pages \
             --minify \
             --baseURL "${{ steps.pages.outputs.base_url }}/"
@@ -76,15 +88,3 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./pages/public
-
-  # Deployment job
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

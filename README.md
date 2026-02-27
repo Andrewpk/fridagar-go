@@ -7,6 +7,13 @@ This is a Go port of [fridagar-node](https://github.com/gaui/fridagar-node).
 
 All returned dates are in the UTC timezone and set to midnight.
 
+## Example Use Case
+
+Please see our [website](https://andrewpk.github.io/fridagar-go/) for an ics file you can subscribe to in your 
+preferred calendar app which contains the past year, current year, and next year's Icelandic holidays and special days.
+
+Once you subscribe to the calendar, it should stay automatically updated throughout the years.
+
 ## Installation
 
 ```bash

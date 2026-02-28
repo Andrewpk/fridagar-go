@@ -3,7 +3,7 @@ title: "Icelandic Holidays"
 description: "A complete listing of public holidays in Iceland — Íslenskir frídagar."
 ---
 
-Welcome!
+{{< holiday-calendar >}}
 
 This site is automatically generated every week at a minimum and will autopublish a new version of the [iCal
 compatible ICS file](icelandic_holidays.ics). The calendar will always contain the past year, the current year, and the next year's holidays.
@@ -22,5 +22,4 @@ that you always have the most up-to-date holiday information without needing to 
     </span>
   </a>
 </div>
-
 

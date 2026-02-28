@@ -1,0 +1,739 @@
+<!-- Holiday Calendar Shortcode — fully self-contained styles (no Tailwind dependency) -->
+<style>
+  /* ===== Calendar Container ===== */
+  #holiday-calendar {
+    width: 100%;
+    max-width: 56rem;
+    margin: 2rem auto;
+    font-family: inherit;
+  }
+  #holiday-calendar *, #holiday-calendar *::before, #holiday-calendar *::after {
+    box-sizing: border-box;
+  }
+
+  /* ===== Navigation rows ===== */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .cal-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+    background: rgba(150,150,150,0.15);
+    color: rgba(200,200,200,0.85);
+  }
+  .cal-nav-btn:hover {
+    background: rgba(59,130,246,0.2);
+    color: rgb(96,165,250);
+  }
+  .cal-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .cal-nav-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .cal-nav-sm .cal-nav-btn svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .cal-year-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    min-width: 5ch;
+    text-align: center;
+    user-select: none;
+    color: rgba(255,255,255,0.92);
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+  .cal-month-label {
+    font-size: 1.125rem;
+    font-weight: 600;
+    min-width: 10ch;
+    text-align: center;
+    user-select: none;
+    color: rgba(255,255,255,0.8);
+    margin: 0;
+  }
+
+  /* Today button */
+  .cal-today-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .cal-today-btn {
+    padding: 0.375rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    color: #fff;
+    background: rgb(59,130,246);
+    transition: background-color 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .cal-today-btn:hover {
+    background: rgb(37,99,235);
+  }
+
+  /* ===== Calendar Card ===== */
+  .cal-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(38,38,38,0.8);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+  }
+
+  /* ===== Day-of-week header ===== */
+  .cal-dow-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .cal-dow-cell {
+    padding: 0.75rem 0;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.45);
+  }
+
+  /* ===== Day Grid ===== */
+  #cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  /* ===== Day Cells ===== */
+  .cal-day {
+    position: relative;
+    min-height: 4.5rem;
+    padding: 0.375rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    cursor: default;
+    transition: background-color 0.15s;
+  }
+  .cal-day:nth-child(7n) {
+    border-right: none;
+  }
+  .cal-day.last-row {
+    border-bottom: none;
+  }
+  .cal-day:hover {
+    background: rgba(255,255,255,0.03);
+  }
+  .cal-day.has-holiday {
+    cursor: pointer;
+  }
+  .cal-day.has-holiday:hover {
+    background: rgba(59,130,246,0.08);
+  }
+  .cal-day.outside-month {
+    opacity: 0.3;
+  }
+  .cal-day.is-selected {
+    background: rgba(59,130,246,0.12) !important;
+  }
+
+  /* Day number */
+  .day-number {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    color: rgba(255,255,255,0.75);
+  }
+  .cal-day.is-today .day-number {
+    outline: 2px solid rgb(96,165,250);
+    outline-offset: 1px;
+  }
+
+  /* Holiday dots */
+  .holiday-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    margin-top: 0.15rem;
+    justify-content: center;
+  }
+  .holiday-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+  .dot-public  { background: rgb(59,130,246); }
+  .dot-half    { background: rgb(167,139,250); }
+  .dot-special { background: rgb(251,191,36); }
+
+  /* Holiday label text on day cell */
+  .holiday-label {
+    font-size: 0.55rem;
+    line-height: 0.8rem;
+    margin-top: 0.125rem;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    padding: 0 0.125rem;
+  }
+  .label-public  { color: rgb(96,165,250); }
+  .label-half    { color: rgb(167,139,250); }
+  .label-special { color: rgb(251,191,36); }
+
+  @media (min-width: 640px) {
+    .cal-day {
+      min-height: 5.5rem;
+      padding: 0.5rem;
+    }
+    .holiday-label {
+      font-size: 0.65rem;
+      line-height: 0.9rem;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+
+  /* ===== Detail Panel ===== */
+  #cal-detail {
+    margin-top: 1rem;
+  }
+  #cal-detail.cal-hidden {
+    display: none;
+  }
+  #cal-detail.show {
+    animation: calSlideDown 0.2s ease-out;
+  }
+  @keyframes calSlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .cal-detail-card {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(38,38,38,0.85);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    padding: 1.25rem;
+  }
+  .cal-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .cal-detail-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .cal-detail-date {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    margin: 0 0 0.5rem 0;
+  }
+  .cal-detail-close {
+    flex-shrink: 0;
+    padding: 0.25rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    cursor: pointer;
+    color: rgba(255,255,255,0.4);
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .cal-detail-close:hover {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+  }
+  .cal-detail-close svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Detail event row */
+  .cal-evt-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .cal-evt-row:last-child {
+    margin-bottom: 0;
+  }
+  .cal-evt-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+    margin-top: 0.4rem;
+  }
+  .cal-evt-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.92);
+    margin: 0;
+  }
+  .cal-evt-badge {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    border: 1px solid;
+  }
+  .badge-public {
+    background: rgba(59,130,246,0.15);
+    color: rgb(147,197,253);
+    border-color: rgba(59,130,246,0.3);
+  }
+  .badge-half {
+    background: rgba(139,92,246,0.15);
+    color: rgb(196,181,253);
+    border-color: rgba(139,92,246,0.3);
+  }
+  .badge-special {
+    background: rgba(245,158,11,0.15);
+    color: rgb(252,211,77);
+    border-color: rgba(245,158,11,0.3);
+  }
+  .cal-evt-desc {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ===== Legend ===== */
+  .cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.25rem;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.45);
+  }
+  .cal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .cal-legend-dot {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 9999px;
+  }
+  .cal-legend-today {
+    display: inline-block;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 0.125rem;
+    border: 2px solid rgb(96,165,250);
+  }
+
+  /* ===== Light mode overrides ===== */
+  :root:not(.dark) .cal-year-label { color: rgba(0,0,0,0.87); }
+  :root:not(.dark) .cal-month-label { color: rgba(0,0,0,0.7); }
+  :root:not(.dark) .cal-nav-btn { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.55); }
+  :root:not(.dark) .cal-nav-btn:hover { background: rgba(59,130,246,0.12); color: rgb(37,99,235); }
+  :root:not(.dark) .cal-card { background: #fff; border-color: rgb(229,231,235); box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  :root:not(.dark) .cal-dow-row { background: rgb(249,250,251); border-bottom-color: rgb(229,231,235); }
+  :root:not(.dark) .cal-dow-cell { color: rgba(0,0,0,0.45); }
+  :root:not(.dark) .cal-day { border-color: rgb(229,231,235); }
+  :root:not(.dark) .cal-day:hover { background: rgb(249,250,251); }
+  :root:not(.dark) .cal-day.has-holiday:hover { background: rgba(59,130,246,0.06); }
+  :root:not(.dark) .cal-day.is-selected { background: rgba(59,130,246,0.08) !important; }
+  :root:not(.dark) .day-number { color: rgba(0,0,0,0.7); }
+  :root:not(.dark) .cal-day.is-today .day-number { outline-color: rgb(59,130,246); }
+  :root:not(.dark) .label-public { color: rgb(37,99,235); }
+  :root:not(.dark) .label-half { color: rgb(124,58,237); }
+  :root:not(.dark) .label-special { color: rgb(217,119,6); }
+  :root:not(.dark) .cal-detail-card { background: #fff; border-color: rgb(229,231,235); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  :root:not(.dark) .cal-detail-date { color: rgba(0,0,0,0.5); }
+  :root:not(.dark) .cal-detail-close { color: rgba(0,0,0,0.35); }
+  :root:not(.dark) .cal-detail-close:hover { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.6); }
+  :root:not(.dark) .cal-evt-name { color: rgba(0,0,0,0.87); }
+  :root:not(.dark) .badge-public { background: rgba(59,130,246,0.1); color: rgb(29,78,216); border-color: rgba(59,130,246,0.25); }
+  :root:not(.dark) .badge-half { background: rgba(139,92,246,0.1); color: rgb(109,40,217); border-color: rgba(139,92,246,0.25); }
+  :root:not(.dark) .badge-special { background: rgba(245,158,11,0.1); color: rgb(180,83,9); border-color: rgba(245,158,11,0.25); }
+  :root:not(.dark) .cal-evt-desc { color: rgba(0,0,0,0.5); }
+  :root:not(.dark) .cal-legend { color: rgba(0,0,0,0.45); }
+</style>
+
+<div id="holiday-calendar" class="not-prose">
+  <!-- Year Navigation -->
+  <div class="cal-nav">
+    <button id="cal-prev-year" class="cal-nav-btn" aria-label="Previous year">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <h2 id="cal-year-label" class="cal-year-label"></h2>
+    <button id="cal-next-year" class="cal-nav-btn" aria-label="Next year">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- Month Navigation -->
+  <div class="cal-nav cal-nav-sm">
+    <button id="cal-prev-month" class="cal-nav-btn" aria-label="Previous month">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <h3 id="cal-month-label" class="cal-month-label"></h3>
+    <button id="cal-next-month" class="cal-nav-btn" aria-label="Next month">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- Today button -->
+  <div class="cal-today-row">
+    <button id="cal-today-btn" class="cal-today-btn">Today</button>
+  </div>
+
+  <!-- Calendar Card -->
+  <div class="cal-card">
+    <!-- Day-of-week header -->
+    <div class="cal-dow-row">
+      <div class="cal-dow-cell">Mon</div>
+      <div class="cal-dow-cell">Tue</div>
+      <div class="cal-dow-cell">Wed</div>
+      <div class="cal-dow-cell">Thu</div>
+      <div class="cal-dow-cell">Fri</div>
+      <div class="cal-dow-cell">Sat</div>
+      <div class="cal-dow-cell">Sun</div>
+    </div>
+    <!-- Day cells grid -->
+    <div id="cal-grid"></div>
+  </div>
+
+  <!-- Holiday Detail Panel -->
+  <div id="cal-detail" class="cal-hidden">
+    <div class="cal-detail-card">
+      <div class="cal-detail-header">
+        <div class="cal-detail-body">
+          <p id="cal-detail-date" class="cal-detail-date"></p>
+          <div id="cal-detail-events"></div>
+        </div>
+        <button id="cal-detail-close" class="cal-detail-close" aria-label="Close details">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="cal-legend">
+    <span class="cal-legend-item">
+      <span class="cal-legend-dot dot-public"></span> Public Holiday
+    </span>
+    <span class="cal-legend-item">
+      <span class="cal-legend-dot dot-special"></span> Special Day
+    </span>
+    <span class="cal-legend-item">
+      <span class="cal-legend-dot dot-half"></span> Half Day
+    </span>
+    <span class="cal-legend-item">
+      <span class="cal-legend-today"></span> Today
+    </span>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ============ ICS Parser ============
+  var holidays = {};
+  var minYear = 9999, maxYear = 0;
+
+  function parseICS(text) {
+    var blocks = text.split('BEGIN:VEVENT');
+    for (var i = 1; i < blocks.length; i++) {
+      var block = blocks[i].split('END:VEVENT')[0];
+      var getField = function(key) {
+        var m = block.match(new RegExp('^' + key + '[:;](.*)$', 'm'));
+        return m ? m[1].replace(/^.*:/, '').trim() : '';
+      };
+      var summary = getField('SUMMARY');
+      var description = getField('DESCRIPTION');
+      var dtstart = getField('DTSTART');
+      if (summary && dtstart) {
+        var y = parseInt(dtstart.slice(0, 4), 10);
+        var mo = parseInt(dtstart.slice(4, 6), 10);
+        var d = parseInt(dtstart.slice(6, 8), 10);
+        var dk = y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+
+        var type = 'special';
+        var descLower = description.toLowerCase();
+        if (descLower.indexOf('h\u00e1lfdagur') !== -1) {
+          type = 'half';
+        } else if (descLower.indexOf('opinber') !== -1) {
+          type = 'public';
+        }
+
+        if (!holidays[dk]) holidays[dk] = [];
+        holidays[dk].push({ summary: summary, description: description, type: type });
+
+        if (y < minYear) minYear = y;
+        if (y > maxYear) maxYear = y;
+      }
+    }
+  }
+
+  // ============ Calendar State ============
+  var now = new Date();
+  var currentYear = now.getFullYear();
+  var currentMonth = now.getMonth();
+  var selectedDate = null;
+
+  var monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // ============ DOM refs ============
+  var yearLabel = document.getElementById('cal-year-label');
+  var monthLabel = document.getElementById('cal-month-label');
+  var grid = document.getElementById('cal-grid');
+  var detail = document.getElementById('cal-detail');
+  var detailDate = document.getElementById('cal-detail-date');
+  var detailEvents = document.getElementById('cal-detail-events');
+
+  // ============ Helpers ============
+  function makeDateKey(y, m, d) {
+    return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  }
+
+  // ============ Rendering ============
+  function render() {
+    yearLabel.textContent = currentYear;
+    monthLabel.textContent = monthNames[currentMonth];
+
+    document.getElementById('cal-prev-year').disabled = (currentYear <= minYear);
+    document.getElementById('cal-next-year').disabled = (currentYear >= maxYear);
+
+    var firstDay = new Date(currentYear, currentMonth, 1);
+    var lastDay = new Date(currentYear, currentMonth + 1, 0);
+    var startDow = firstDay.getDay() - 1;
+    if (startDow < 0) startDow = 6;
+
+    var daysInMonth = lastDay.getDate();
+    var totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+    var todayKey = makeDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+
+    var html = '';
+    for (var i = 0; i < totalCells; i++) {
+      var dayNum = i - startDow + 1;
+      var cellYear, cellMonth, cellDay, isOutside;
+
+      if (dayNum < 1) {
+        var prev = new Date(currentYear, currentMonth, dayNum);
+        cellYear = prev.getFullYear();
+        cellMonth = prev.getMonth();
+        cellDay = prev.getDate();
+        isOutside = true;
+      } else if (dayNum > daysInMonth) {
+        var next = new Date(currentYear, currentMonth, dayNum);
+        cellYear = next.getFullYear();
+        cellMonth = next.getMonth();
+        cellDay = next.getDate();
+        isOutside = true;
+      } else {
+        cellYear = currentYear;
+        cellMonth = currentMonth;
+        cellDay = dayNum;
+        isOutside = false;
+      }
+
+      var key = makeDateKey(cellYear, cellMonth, cellDay);
+      var dayHolidays = holidays[key] || [];
+      var isToday = (key === todayKey);
+      var isSelected = (key === selectedDate);
+      var isLastRow = (i >= totalCells - 7);
+
+      var cls = 'cal-day';
+      if (isOutside)  cls += ' outside-month';
+      if (dayHolidays.length > 0) cls += ' has-holiday';
+      if (isToday)    cls += ' is-today';
+      if (isSelected) cls += ' is-selected';
+      if (isLastRow)  cls += ' last-row';
+
+      html += '<div class="' + cls + '" data-date="' + key + '">';
+      html += '<div class="day-number">' + cellDay + '</div>';
+
+      if (dayHolidays.length > 0) {
+        html += '<div class="holiday-dots">';
+        for (var j = 0; j < dayHolidays.length; j++) {
+          html += '<span class="holiday-dot dot-' + dayHolidays[j].type + '"></span>';
+        }
+        html += '</div>';
+
+        for (var k = 0; k < dayHolidays.length; k++) {
+          var ev = dayHolidays[k];
+          html += '<div class="holiday-label label-' + ev.type + '" title="' + ev.summary + '">' + ev.summary + '</div>';
+        }
+      }
+
+      html += '</div>';
+    }
+
+    grid.innerHTML = html;
+
+    // Click handlers for holiday days
+    var holidayCells = grid.querySelectorAll('.has-holiday');
+    for (var c = 0; c < holidayCells.length; c++) {
+      (function(el) {
+        el.addEventListener('click', function() {
+          var clickedKey = el.getAttribute('data-date');
+          showDetail(clickedKey);
+          var selected = grid.querySelectorAll('.is-selected');
+          for (var s = 0; s < selected.length; s++) selected[s].classList.remove('is-selected');
+          el.classList.add('is-selected');
+          selectedDate = clickedKey;
+        });
+      })(holidayCells[c]);
+    }
+  }
+
+  function showDetail(key) {
+    var evts = holidays[key] || [];
+    if (evts.length === 0) {
+      detail.classList.add('cal-hidden');
+      detail.classList.remove('show');
+      return;
+    }
+
+    var parts = key.split('-');
+    var d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    detailDate.textContent = dayNames[d.getDay()] + ', ' + monthNames[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+
+    var eventsHtml = '';
+    for (var i = 0; i < evts.length; i++) {
+      var evt = evts[i];
+      var typeLabel;
+      if (evt.type === 'public') typeLabel = 'Public Holiday';
+      else if (evt.type === 'half') typeLabel = 'Public Holiday (Half Day)';
+      else typeLabel = 'Special Day';
+
+      eventsHtml += '<div class="cal-evt-row">';
+      eventsHtml += '<span class="cal-evt-dot dot-' + evt.type + '"></span>';
+      eventsHtml += '<div>';
+      eventsHtml += '<p class="cal-evt-name">' + evt.summary + '</p>';
+      eventsHtml += '<span class="cal-evt-badge badge-' + evt.type + '">' + typeLabel + '</span>';
+      eventsHtml += '<p class="cal-evt-desc">' + evt.description + '</p>';
+      eventsHtml += '</div></div>';
+    }
+
+    detailEvents.innerHTML = eventsHtml;
+    detail.classList.remove('cal-hidden');
+    detail.classList.add('show');
+    selectedDate = key;
+    detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ============ Navigation ============
+  document.getElementById('cal-prev-year').addEventListener('click', function() {
+    if (currentYear > minYear) {
+      currentYear--;
+      selectedDate = null;
+      detail.classList.add('cal-hidden');
+      render();
+    }
+  });
+  document.getElementById('cal-next-year').addEventListener('click', function() {
+    if (currentYear < maxYear) {
+      currentYear++;
+      selectedDate = null;
+      detail.classList.add('cal-hidden');
+      render();
+    }
+  });
+  document.getElementById('cal-prev-month').addEventListener('click', function() {
+    currentMonth--;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      if (currentYear > minYear) currentYear--;
+      else { currentMonth = 0; return; }
+    }
+    selectedDate = null;
+    detail.classList.add('cal-hidden');
+    render();
+  });
+  document.getElementById('cal-next-month').addEventListener('click', function() {
+    currentMonth++;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      if (currentYear < maxYear) currentYear++;
+      else { currentMonth = 11; return; }
+    }
+    selectedDate = null;
+    detail.classList.add('cal-hidden');
+    render();
+  });
+  document.getElementById('cal-today-btn').addEventListener('click', function() {
+    currentYear = now.getFullYear();
+    currentMonth = now.getMonth();
+    selectedDate = null;
+    detail.classList.add('cal-hidden');
+    render();
+  });
+  document.getElementById('cal-detail-close').addEventListener('click', function() {
+    detail.classList.add('cal-hidden');
+    detail.classList.remove('show');
+    var selected = grid.querySelectorAll('.is-selected');
+    for (var s = 0; s < selected.length; s++) selected[s].classList.remove('is-selected');
+    selectedDate = null;
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') {
+      document.getElementById('cal-prev-month').click();
+    } else if (e.key === 'ArrowRight') {
+      document.getElementById('cal-next-month').click();
+    } else if (e.key === 'Escape') {
+      document.getElementById('cal-detail-close').click();
+    }
+  });
+
+  // ============ Load ICS & Init ============
+  fetch('icelandic_holidays.ics')
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      parseICS(text);
+      render();
+    })
+    .catch(function(err) {
+      console.error('Failed to load ICS file:', err);
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,255,255,0.5);">Unable to load calendar data.</div>';
+    });
+})();
+</script>
+
